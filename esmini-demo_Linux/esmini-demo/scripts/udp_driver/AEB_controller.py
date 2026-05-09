@@ -1,153 +1,169 @@
 '''
 适配esmini的AEB控制算法,当TTC小于等于2秒时，施加制动，防止碰撞。
+
+OSI GroundTruth（本脚本用到的字段）简要说明：
+- msg.host_vehicle_id：仿真定义的「主车 / ego」在 OSI 里的 id（若有），用于在 moving_object 里找对的车。
+- moving_object[]：动态物体列表；每个元素的 id / base.position / base.velocity / base.orientation.yaw
+  分别为全局坐标下的位置 (x,y)、速度 (vx,vy) 与航向 yaw（弧度）。
+- AEB 用的 TTC：在 ego 航向坐标系下算「前车纵向间距」与「沿航向的接近速度」，近似为 gap / closing_speed。
 '''
 import math
 import struct
+from socket import timeout
+
 from udp_osi_common import *
 
-# def print_osi_stuff(msg):
 
-#     print("OSI message timestamp: {:.2f} seconds".format(msg.timestamp.seconds + msg.timestamp.nanos * 1e-9))
+def set_udp_driver(udp_sender, throttle=0.0, brake=0.0, steering_angle=0.0, object_id=0):
+    """向 UDPDriver 发送一帧 driverInput（格式与 testUDPDriver-print-osi-info.py 一致）。"""
+    global _frame_number
+    udp_sender.send(
+        struct.pack(
+            'iiiiddd',
+            1,
+            input_modes['driverInput'],
+            object_id,
+            _frame_number,
+            throttle,
+            brake,
+            -steering_angle,
+        )
+    )
+    _frame_number += 1
 
-#     # Print some static content typically only available in first message
-#     print("{} lanes".format(len(msg.lane)))
-#     for i, l in enumerate(msg.lane):
-#         clf = l.classification
-#         print("  [{}] id {} type: {}".format(i, l.id.value, clf.type))
-#         print("    centerline:")
-#         for c_line in clf.centerline:
-#             print("    x: {:.2f} y: {:.2f}".format(c_line.x, c_line.y))
 
-#     print('{} stationary objects'.format(len(msg.stationary_object)))
-#     for i, s in enumerate(msg.stationary_object):
-#         print('  [{}] id {} type {}'.format(i, s.id.value, s.classification.type))
-#         print('    pos.x {:.2f} pos.y {:.2f} rot.h {:.2f}'.format(s.base.position.x, s.base.position.y, s.base.orientation.yaw))
+def _moving_by_id(moving_objects, id_value):
+    for o in moving_objects:
+        if o.id.value == id_value:
+            return o
+    return None
 
-#     # Print some dynamic content from the message
-#     print('{} moving objects'.format(len(msg.moving_object)))
-#     for i, o in enumerate(msg.moving_object):
-#         print('  [{}] id {}'.format(i, o.id.value))
-#         print('    pos.x {:.2f} pos.y {:.2f} rot.h {:.2f}'.format(o.base.position.x, o.base.position.y, o.base.orientation.yaw))
-#         print('    vel.x {:.2f} vel.y {:.2f} rot_rate.h {:.2f}'.format(o.base.velocity.x, o.base.velocity.y, o.base.orientation_rate.yaw))
-#         print('    acc.x {:.2f} acc.y {:.2f} rot_acc.h {:.2f}'.format(o.base.acceleration.x, o.base.acceleration.y, o.base.orientation_acceleration.yaw))
 
-#         lane_id = o.assigned_lane_id[0].value if len(msg.lane) > 0 and len(o.assigned_lane_id) > 0 else -1
-#         left_lane_id = -1
-#         right_lane_id = -1
-#         for l in msg.lane:
-#             if l.id.value == o.assigned_lane_id[0].value:
-#                 left_lane_id = l.classification.left_adjacent_lane_id[0].value if len(l.classification.left_adjacent_lane_id) > 0 else -1
-#                 right_lane_id = l.classification.right_adjacent_lane_id[0].value if len(l.classification.right_adjacent_lane_id) > 0 else -1
-#                 break
-#         print('    lane id {} left adj lane id {} right adj lane id {}'.format(lane_id, left_lane_id, right_lane_id))
+def _longitudinal_lateral(ex, ey, ego_yaw, px, py):
+    """ego 坐标系：纵向 x 向前为正，横向 y 向左为正（与常见车辆坐标一致）。"""
+    dx = px - ex
+    dy = py - ey
+    c = math.cos(ego_yaw)
+    s = math.sin(ego_yaw)
+    lon = dx * c + dy * s
+    lat = -dx * s + dy * c
+    return lon, lat
+
+
+def get_ttc(
+    msg,
+    ego_id=None,
+    target_id=None,
+    lane_half_width=2.0,
+    vehicle_margin=5.0,
+):
+    """
+    根据 OSI GroundTruth 估算与「前方 relevant target」的碰撞时间（秒）。
+
+    :param msg: osi3 GroundTruth（已由 OSIReceiver.receive() 解析）
+    :param ego_id: 主车 OSI id；默认 None 时使用 msg.host_vehicle_id（若无效则用 moving_object[0]）
+    :param target_id: 目标车 OSI id；默认 None 时在主车前方、车道宽度内的最近一辆车
+    :param lane_half_width: 认为「同车道」的最大横向偏移（米）
+    :param vehicle_margin: 两车几何与安全裕度近似（米），从中心距中扣除，相当于粗略保险杠间距
+    :return: TTC（秒）；未构成威胁时返回 math.inf
+    """
+    objs = msg.moving_object
+    if len(objs) == 0:
+        return math.inf
+
+    if ego_id is None:
+        hid = msg.host_vehicle_id
+        ego_id = hid.value if hid is not None and hid.value != 0 else None
+
+    ego = _moving_by_id(objs, ego_id) if ego_id is not None else None
+    if ego is None:
+        ego = objs[0]
+
+    ex = ego.base.position.x
+    ey = ego.base.position.y
+    ego_yaw = ego.base.orientation.yaw
+    vx_e = ego.base.velocity.x
+    vy_e = ego.base.velocity.y
+
+    target = None
+    if target_id is not None:
+        target = _moving_by_id(objs, target_id)
+    else:
+        best_lon = None
+        for o in objs:
+            if o.id.value == ego.id.value:
+                continue
+            lon, lat = _longitudinal_lateral(ex, ey, ego_yaw, o.base.position.x, o.base.position.y)
+            if lon <= 0.0 or abs(lat) > lane_half_width:
+                continue
+            if best_lon is None or lon < best_lon:
+                best_lon = lon
+                target = o
+
+    if target is None:
+        return math.inf
+
+    lon, lat = _longitudinal_lateral(
+        ex, ey, ego_yaw, target.base.position.x, target.base.position.y
+    )
+    if lon <= 0.0 or abs(lat) > lane_half_width:
+        return math.inf
+
+    gap = lon - vehicle_margin
+    if gap <= 0.0:
+        return 0.0
+
+    c = math.cos(ego_yaw)
+    s = math.sin(ego_yaw)
+    vx_t = target.base.velocity.x
+    vy_t = target.base.velocity.y
+    ego_along = vx_e * c + vy_e * s
+    target_along = vx_t * c + vy_t * s
+    closing = ego_along - target_along
+    if closing <= 1e-3:
+        return math.inf
+
+    return gap / closing
+
+
+def print_osi_stuff(msg):
+
+    print("OSI message timestamp: {:.2f} seconds".format(msg.timestamp.seconds + msg.timestamp.nanos * 1e-9))
+
+    # Print some static content typically only available in first message
+    print("{} lanes".format(len(msg.lane)))
+    for i, l in enumerate(msg.lane):
+        clf = l.classification
+        print("  [{}] id {} type: {}".format(i, l.id.value, clf.type))
+        print("    centerline:")
+        for c_line in clf.centerline:
+            print("    x: {:.2f} y: {:.2f}".format(c_line.x, c_line.y))
+
+    print('{} stationary objects'.format(len(msg.stationary_object)))
+    for i, s in enumerate(msg.stationary_object):
+        print('  [{}] id {} type {}'.format(i, s.id.value, s.classification.type))
+        print('    pos.x {:.2f} pos.y {:.2f} rot.h {:.2f}'.format(s.base.position.x, s.base.position.y, s.base.orientation.yaw))
+
+    # Print some dynamic content from the message
+    print('{} moving objects'.format(len(msg.moving_object)))
+    for i, o in enumerate(msg.moving_object):
+        print('  [{}] id {}'.format(i, o.id.value))
+        print('    pos.x {:.2f} pos.y {:.2f} rot.h {:.2f}'.format(o.base.position.x, o.base.position.y, o.base.orientation.yaw))
+        print('    vel.x {:.2f} vel.y {:.2f} rot_rate.h {:.2f}'.format(o.base.velocity.x, o.base.velocity.y, o.base.orientation_rate.yaw))
+        print('    acc.x {:.2f} acc.y {:.2f} rot_acc.h {:.2f}'.format(o.base.acceleration.x, o.base.acceleration.y, o.base.orientation_acceleration.yaw))
+
+        lane_id = o.assigned_lane_id[0].value if len(msg.lane) > 0 and len(o.assigned_lane_id) > 0 else -1
+        left_lane_id = -1
+        right_lane_id = -1
+        for l in msg.lane:
+            if l.id.value == o.assigned_lane_id[0].value:
+                left_lane_id = l.classification.left_adjacent_lane_id[0].value if len(l.classification.left_adjacent_lane_id) > 0 else -1
+                right_lane_id = l.classification.right_adjacent_lane_id[0].value if len(l.classification.right_adjacent_lane_id) > 0 else -1
+                break
+        print('    lane id {} left adj lane id {} right adj lane id {}'.format(lane_id, left_lane_id, right_lane_id))
 
 
 _frame_number = 0
-
-
-def set_udp_driver(
-    udp_sender,
-    throttle=0.0,
-    brake=0.0,
-    steering_angle=0.0,
-    object_id=0,
-):
-    """
-    向 esmini UDPDriverController 发送 driverInput 控制量。
-
-    throttle: 油门，范围 0.0 ~ 1.0
-    brake: 制动，范围 0.0 ~ 1.0
-    steering_angle: 方向盘/转角输入，单位一般按 esmini 示例理解为 rad
-    object_id: 被控制对象 id，通常 ego 是 0
-    """
-    global _frame_number
-
-    throttle = max(0.0, min(1.0, throttle))
-    brake = max(0.0, min(1.0, brake))
-
-    msg = struct.pack(
-        "iiiiddd",
-        1,                          # version
-        input_modes["driverInput"], # input mode
-        object_id,                  # object id
-        _frame_number,              # frame number
-        throttle,
-        brake,
-        -steering_angle             # 和 testUDPDriver.py 保持一致
-    )
-
-    udp_sender.send(msg)
-    _frame_number += 1
-
-def speed_2d(obj):
-    """计算 moving object 的二维速度模长"""
-    vx = obj.base.velocity.x
-    vy = obj.base.velocity.y
-    return math.sqrt(vx * vx + vy * vy)
-
-
-def get_ttc(msg, ego_id=36, target_id=37, lane_width=3.8):
-    """
-    从 OSI GroundTruth 中计算 ego 与目标车之间的 TTC。
-
-    默认：
-    - ego_id=36
-    - target_id=37
-
-    你之前 cut-in log 里：
-    id36 在 lane16，速度约 30m/s；
-    id37 在 lane14，后续速度约 36m/s。
-    所以这里先按你的 log 写默认值。
-
-    TTC 计算逻辑：
-    - 只在目标车位于 ego 前方时计算；
-    - 如果目标车不在 ego 前方，返回 inf；
-    - 如果两车没有接近趋势，返回 inf；
-    - 如果横向距离过大，认为暂时不构成 AEB 目标，返回 inf。
-    """
-    ego = None
-    target = None
-
-    for obj in msg.moving_object:
-        if obj.id.value == ego_id:
-            ego = obj
-        elif obj.id.value == target_id:
-            target = obj
-
-    if ego is None or target is None:
-        return float("inf")
-
-    ego_x = ego.base.position.x
-    ego_y = ego.base.position.y
-    target_x = target.base.position.x
-    target_y = target.base.position.y
-
-    ego_v = speed_2d(ego)
-    target_v = speed_2d(target)
-
-    dx = target_x - ego_x
-    dy = target_y - ego_y
-
-    lateral_gap = abs(dx)
-    longitudinal_gap = dy
-
-    # 这里按你的场景方向：车辆主要沿 y 正方向行驶
-    # 目标车必须在 ego 前方，才计算前向 TTC
-    if longitudinal_gap <= 0:
-        return float("inf")
-
-    # 横向距离太远，暂不认为是本车道直接碰撞目标
-    # cut-in 场景可以适当放宽，例如 1.5 个车道宽
-    if lateral_gap > lane_width * 1.5:
-        return float("inf")
-
-    # ego 比目标车快，才有追尾风险
-    closing_speed = ego_v - target_v
-
-    if closing_speed <= 0:
-        return float("inf")
-
-    return longitudinal_gap / closing_speed
 if __name__ == "__main__":
 
     # Create UDP socket objects
@@ -171,8 +187,11 @@ if __name__ == "__main__":
             if ttc <= 2.0:
                 print('TTC <= 2.0 seconds, applying brake!')
                 set_udp_driver(udpSender0, throttle=0.0, brake=0.5, steering_angle=0.0)
+            else:
+                # 闭环需周期发送 driverInput；否则前车拉开后车速会掉光
+                set_udp_driver(udpSender0, throttle=0.12, brake=0.0, steering_angle=0.0)
         except timeout:
-            print('osiReceive Timeout')
+            print('osiReceive Timeout（若需超时，请给 UdpReceiver 设置 timeout）')
             done = True
         except KeyboardInterrupt:
             print('Ctrl+C pressed, quit')

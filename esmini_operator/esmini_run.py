@@ -7,8 +7,9 @@ import os
 OSI_INFO_OUTPUT = True
 
 # 文件和程序路径
-FILE_PATH = "/home/xs/Sunhan/Program_files/esmini-demo_Linux/esmini-demo/resources/xosc/cut-in.xosc"
-ESMINI_PATH = "/home/xs/Sunhan/Program_files/esmini-demo_Linux/esmini-demo/bin/esmini"
+FILE_PATH = "/home/xs/桌面/git/mygit/esmini-demo_Linux/esmini-demo/resources/xosc/cut-in.xosc"
+# FILE_PATH = "/home/xs/桌面/git/mygit/esmini-demo_Linux/esmini-demo/scripts/udp_driver/two_cars_in_open_space.xosc"
+ESMINI_PATH = "/home/xs/桌面/git/mygit/esmini-demo_Linux/esmini-demo/bin/esmini"
 
 # 构建命令行指令
 base_cmd = f"{ESMINI_PATH} --window 60 60 1024 576 --osc {FILE_PATH}"
