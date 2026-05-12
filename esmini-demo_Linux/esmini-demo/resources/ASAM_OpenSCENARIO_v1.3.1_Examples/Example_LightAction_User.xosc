@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <FileHeader revMajor="1" revMinor="2" date="2020-02-21T10:00:00" description="Overtaker example"
+        author="ASAM e.V."/>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="Ego">
+                    <PrivateAction>
+                        <AppearanceAction>
+                            <LightStateAction>
+                                <LightType>
+                                    <UserDefinedLight userDefinedLightType="myLights"/>
+                                </LightType>
+                            </LightStateAction>
+                        </AppearanceAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+    </Storyboard>
+</OpenSCENARIO>

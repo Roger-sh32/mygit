@@ -1,0 +1,21 @@
+{
+  "csv_path": "/home/xs/桌面/git/mygit/esmini_operator/test_runs/20260512_200118/operator_run_20260512_200120_frame_log.csv",
+  "config": {
+    "ttc_threshold": 2.0,
+    "max_trigger_delay": 0.2,
+    "min_safe_distance": 3.0,
+    "collision_distance": 2.5,
+    "ego_stop_speed": 0.5
+  },
+  "min_ttc": 0.08931756,
+  "min_distance": 5.415356404996828,
+  "aeb_triggered": true,
+  "aeb_trigger_time": 1.77692,
+  "ttc_threshold_cross_time": 1.77692,
+  "trigger_delay": 0.0,
+  "max_brake_cmd": 1.0,
+  "ego_final_speed": 8.505977999995261,
+  "collision": false,
+  "final_result": "PASS",
+  "fail_reason": []
+}

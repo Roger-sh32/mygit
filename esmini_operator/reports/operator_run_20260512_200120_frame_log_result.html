@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <title>测试结果 — operator_run</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; background: #f5f5f5; }
+    h1 { font-size: 1.25rem; }
+    .badge { display: inline-block; padding: 6px 14px; border-radius: 6px; font-weight: 600; }
+    .badge.pass { background: #c8e6c9; color: #1b5e20; }
+    .badge.fail { background: #ffcdd2; color: #b71c1c; }
+    table { border-collapse: collapse; background: #fff; margin: 16px 0; min-width: 420px; }
+    th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; vertical-align: top; }
+    th { background: #eee; width: 220px; }
+    pre { background: #fff; border: 1px solid #ddd; padding: 12px; overflow: auto; }
+    ul { background: #fff; border: 1px solid #ddd; padding: 12px 12px 12px 28px; }
+  </style>
+</head>
+<body>
+  <h1>测试结果 <span class="badge pass">PASS</span></h1>
+  <p>生成时间：2026-05-12T20:01:38</p>
+  <h2>运行信息</h2>
+  <table><tr><th>case</th><td>operator_run</td></tr><tr><th>xosc</th><td>/home/xs/桌面/git/esmini/resources/xosc/AEB-test.xosc</td></tr><tr><th>algo</th><td>/home/xs/桌面/git/esmini/scripts/udp_driver/AEB_controller.py</td></tr><tr><th>result_json</th><td>/home/xs/桌面/git/mygit/esmini_operator/test_runs/20260512_200118/operator_run_20260512_200120_frame_log_result.json</td></tr><tr><th>generated_at</th><td>2026-05-12T20:01:38</td></tr></table>
+  <h2>指标</h2>
+  <table><tr><th>aeb_trigger_time</th><td>1.77692</td></tr><tr><th>aeb_triggered</th><td>True</td></tr><tr><th>collision</th><td>False</td></tr><tr><th>csv_path</th><td>/home/xs/桌面/git/mygit/esmini_operator/test_runs/20260512_200118/operator_run_20260512_200120_frame_log.csv</td></tr><tr><th>ego_final_speed</th><td>8.50598</td></tr><tr><th>final_result</th><td>PASS</td></tr><tr><th>max_brake_cmd</th><td>1</td></tr><tr><th>min_distance</th><td>5.41536</td></tr><tr><th>min_ttc</th><td>0.0893176</td></tr><tr><th>trigger_delay</th><td>0</td></tr><tr><th>ttc_threshold_cross_time</th><td>1.77692</td></tr></table>
+  <h2>fail_reason</h2>
+  <ul><li>（无）</li></ul>
+  <h2>评测配置 config</h2>
+  <pre>{
+  &quot;ttc_threshold&quot;: 2.0,
+  &quot;max_trigger_delay&quot;: 0.2,
+  &quot;min_safe_distance&quot;: 3.0,
+  &quot;collision_distance&quot;: 2.5,
+  &quot;ego_stop_speed&quot;: 0.5
+}</pre>
+</body>
+</html>

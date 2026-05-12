@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../Schema/OpenSCENARIO.xsd">
+  <FileHeader author="ASAM e.V." date="2021-02-05T18:50:17" description="Simple Overtaker example" revMajor="1" revMinor="3"/>
+  <ParameterDeclarations/>
+  <TrafficSignalController>
+    <Phase name="MyPhase" duration="1">
+		<TrafficeSignalGroupState state="on"/>
+    </Phase>
+  </TrafficSignalController>
+</OpenSCENARIO>

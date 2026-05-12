@@ -1,0 +1,117 @@
+<OpenDRIVE>
+  <header revMajor="1" revMinor="4" name="1.scene" version="1" date="2026-05-12T03:12:11.334Z" north="0" south="0" east="0" west="0" vendor="Truevision.ai"></header>
+  <road name="Road1" length="581.106346198687" id="1" junction="-1" rule="RHT">
+    <type s="0" type="town">
+      <speed max="40" unit="mph"></speed>
+    </type>
+    <link></link>
+    <planView>
+      <geometry s="0.0000000000000000e+0" x="-1.1000000000000000e+2" y="-8.4247011678207162e+0" hdg="4.2444494737164140e-1" length="9.3299159463784264e+1">
+        <line></line>
+      </geometry>
+      <geometry s="9.3299159463784264e+1" x="-2.4979512650164708e+1" y="2.9997296274336577e+1" hdg="4.2444494737164140e-1" length="9.8057872490578944e+1">
+        <arc curvature="-5.6240222582176385e-3"></arc>
+      </geometry>
+      <geometry s="1.9135703195436321e+2" x="7.0771949136983935e+1" y="4.4341920202042068e+1" hdg="6.1561505970707442e+0" length="5.0508168661266382e+0">
+        <line></line>
+      </geometry>
+      <geometry s="1.9640784882048985e+2" x="7.5782066200546822e+1" y="4.3702015502461677e+1" hdg="6.1561505970707442e+0" length="9.0434526982553734e+1">
+        <arc curvature="-1.1722287700188590e-3"></arc>
+      </geometry>
+      <geometry s="2.8684237580304358e+2" x="1.6471315310530872e+2" y="2.7515624127346229e+1" hdg="6.0501406427387447e+0" length="8.7603697443002261e+1">
+        <arc curvature="7.0739931922519346e-3"></arc>
+      </geometry>
+      <geometry s="3.7444607324604584e+2" x="2.5066759055485880e+2" y="3.4130739729382228e+1" hdg="3.8666329488705431e-1" length="1.2136193166805299e+1">
+        <line></line>
+      </geometry>
+      <geometry s="3.8658226641285114e+2" x="2.6190779874287716e+2" y="3.8707300061336412e+1" hdg="3.8666329488705431e-1" length="7.1973547295424055e+1">
+        <arc curvature="-3.3446100797493690e-3"></arc>
+      </geometry>
+      <geometry s="4.5855581370827520e+2" x="3.3117680290842588e+2" y="5.7602532031034315e+1" hdg="1.4593984312746056e-1" length="7.0135757473213062e+1">
+        <arc curvature="-8.5636948935304113e-3"></arc>
+      </geometry>
+      <geometry s="5.2869157118148826e+2" x="3.9944154673902591e+2" y="4.6979936536814208e+1" hdg="5.8285039221798058e+0" length="5.2414775017198735e+1">
+        <line></line>
+      </geometry>
+    </planView>
+    <elevationProfile>
+      <elevation s="0" a="0" b="0" c="0" d="0"></elevation>
+      <elevation s="581.106346198687" a="0" b="0" c="0" d="0"></elevation>
+    </elevationProfile>
+    <lateralProfile>
+      <superelevation s="0" a="0" b="0" c="0" d="0"></superelevation>
+      <superelevation s="581.106346198687" a="0" b="0" c="0" d="0"></superelevation>
+    </lateralProfile>
+    <lanes>
+      <laneOffset s="0" a="0" b="0" c="0" d="0"></laneOffset>
+      <laneOffset s="0" a="0" b="0" c="0" d="0"></laneOffset>
+      <laneSection s="0">
+        <left>
+          <lane id="6" type="sidewalk" level="true">
+            <link></link>
+            <width sOffset="0" a="2" b="0" c="0" d="0"></width>
+          </lane>
+          <lane id="5" type="shoulder" level="true">
+            <link></link>
+            <width sOffset="0" a="0.5" b="0" c="0" d="0"></width>
+          </lane>
+          <lane id="4" type="driving" level="false">
+            <link></link>
+            <width sOffset="0" a="0.1" b="0" c="0" d="0"></width>
+            <roadMark sOffset="0" type="solid" weight="standard" color="white" width="0.15" laneChange="none" height="0"></roadMark>
+            <height sOffset="0" inner="0" outer="0"></height>
+            <height sOffset="581.106346198687" inner="0" outer="0"></height>
+          </lane>
+          <lane id="3" type="driving" level="false">
+            <link></link>
+            <width sOffset="0" a="3.6" b="0" c="0" d="0"></width>
+            <roadMark sOffset="0" type="broken" weight="standard" color="white" width="0.15" laneChange="none" height="0"></roadMark>
+            <height sOffset="0" inner="0" outer="0"></height>
+            <height sOffset="581.106346198687" inner="0" outer="0"></height>
+          </lane>
+          <lane id="2" type="driving" level="false">
+            <link></link>
+            <width sOffset="0" a="0.1" b="0" c="0" d="0"></width>
+            <roadMark sOffset="0" type="broken" weight="standard" color="white" width="0.15" laneChange="none" height="0"></roadMark>
+            <height sOffset="0" inner="0" outer="0"></height>
+            <height sOffset="581.106346198687" inner="0" outer="0"></height>
+          </lane>
+          <lane id="1" type="driving" level="false">
+            <link></link>
+            <width sOffset="0" a="3.6" b="0" c="0" d="0"></width>
+            <roadMark sOffset="0" type="broken" weight="standard" color="white" width="0.15" laneChange="none" height="0"></roadMark>
+          </lane>
+        </left>
+        <center>
+          <lane id="0" type="driving" level="false">
+            <link></link>
+            <roadMark sOffset="0" type="broken" weight="standard" color="white" width="0.15" laneChange="none" height="0"></roadMark>
+          </lane>
+        </center>
+        <right>
+          <lane id="-1" type="driving" level="false">
+            <link></link>
+            <width sOffset="0" a="3.6" b="0" c="0" d="0"></width>
+            <roadMark sOffset="0" type="broken" weight="standard" color="white" width="0.15" laneChange="none" height="0"></roadMark>
+          </lane>
+          <lane id="-2" type="driving" level="false">
+            <link></link>
+            <width sOffset="0" a="3.6" b="0" c="0" d="0"></width>
+            <roadMark sOffset="0" type="solid" weight="standard" color="white" width="0.15" laneChange="none" height="0"></roadMark>
+            <height sOffset="0" inner="0" outer="0"></height>
+            <height sOffset="581.106346198687" inner="0" outer="0"></height>
+          </lane>
+          <lane id="-3" type="shoulder" level="true">
+            <link></link>
+            <width sOffset="0" a="0.5" b="0" c="0" d="0"></width>
+          </lane>
+          <lane id="-4" type="sidewalk" level="true">
+            <link></link>
+            <width sOffset="0" a="2" b="0" c="0" d="0"></width>
+          </lane>
+        </right>
+      </laneSection>
+    </lanes>
+    <objects></objects>
+  </road>
+</OpenDRIVE>
