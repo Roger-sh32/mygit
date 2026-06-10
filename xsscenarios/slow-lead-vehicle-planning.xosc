@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 前方慢车跟驰：Ego=UDP+Planning 减速，Lead 恒速 1 m/s -->
+<!-- 源自 esmini slow-lead-vehicle.xosc，去掉 Ego 侧 TTC 自动制动 story -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="0" date="2019-10-09T10:00:00"
+               description="Slow lead vehicle — Planning UDP Ego (GL-T6)"
+               author="esmini_planning"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_gl_t6"/>
+      <ParameterDeclaration name="LeadVehicle" parameterType="string" value="car_red"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../esmini-demo_Linux/esmini-demo/resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xmap/straight_500m_signs.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="UDPDriverController">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="Port" value="0"/>
+                  <ParameterAssignment parameterRef="BasePort" value="53995"/>
+                  <ParameterAssignment parameterRef="ExecMode" value="synchronous"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+      </ScenarioObject>
+      <ScenarioObject name="Lead">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$LeadVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ActivateControllerAction longitudinal="true" lateral="true"/>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Lead">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="1"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="200"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="TimeLimit" delay="0" conditionEdge="rising">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="25" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

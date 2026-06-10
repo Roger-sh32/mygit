@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Planning 场景车辆目录：car_gl_t6（实车 GL-T6）+ car_red（NPC） -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2026-06-09T10:00:00"
+                description="Planning vehicle catalog"
+                author="esmini_planning"/>
+
+    <Catalog name="VehicleCatalog">
+
+        <!-- GL-T6：对齐 GL-T6_vehicle_params.pb.txt -->
+        <Vehicle name="car_gl_t6" vehicleCategory="car"
+                 model3d="../../../esmini-demo_Linux/esmini-demo/resources/models/car_white.osgb">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="ScaleMode" parameterType="string" value="BBToModel"/>
+                <ParameterDeclaration name="RefPointXOffset" parameterType="double" value="0.0"/>
+                <ParameterDeclaration name="MaxSpeed" parameterType="double" value="${120/3.6}"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="8"/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="3"/>
+            </ParameterDeclarations>
+            <BoundingBox>
+                <Center x="1.075" y="0.0" z="1.0"/>
+                <Dimensions width="1.4" length="3.69" height="2.0"/>
+            </BoundingBox>
+            <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
+            <Axles>
+                <FrontAxle maxSteering="0.551" wheelDiameter="0.7" trackWidth="1.4" positionX="2.4" positionZ="0.35"/>
+                <RearAxle maxSteering="0.0" wheelDiameter="0.7" trackWidth="1.4" positionX="0" positionZ="0.35"/>
+            </Axles>
+            <Properties>
+                <Property name="scaleMode" value="$ScaleMode"/>
+                <Property name="refpoint_x_offset" value="$RefPointXOffset"/>
+                <Property name="color" value="#4A90D9"/>
+                <Property name="vehicle_model" value="GL-T6"/>
+            </Properties>
+        </Vehicle>
+
+        <Vehicle name="car_red" vehicleCategory="car"
+                 model3d="../../../esmini-demo_Linux/esmini-demo/resources/models/car_red.osgb">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="MaxSpeed" parameterType="double" value="70.0"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>
+                <ParameterDeclaration name="ScaleMode" parameterType="string" value="BBToModel"/>
+            </ParameterDeclarations>
+            <BoundingBox>
+                <Center x="1.45" y="0.0" z="0.75"/>
+                <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.0" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+                <Property name="scaleMode" value="$ScaleMode"/>
+                <Property name="color" value="#CC0000"/>
+            </Properties>
+        </Vehicle>
+
+    </Catalog>
+</OpenSCENARIO>
